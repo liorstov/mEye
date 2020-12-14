@@ -67,22 +67,31 @@ create a surface from two centroids
 	6. if frame number %5 ==0 ground heading
 
 ## results
+
 # Target only
 
 ![Alt Text](/plots/targetOnly.png)
-
+### Mean error on heading : 0.0
 # Target and Ego
 ![Alt Text](/plots/TargetEgo.png)
-
+### Mean error on heading : 0.0
 # target only noise
 ![Alt Text](/plots/noisetargetOnly.png)
-### Error on heading : -0.143914985
+### Mean error on heading : -0.143914985
 
 # target and Ego noise
 ![Alt Text](/plots/TargetEgoNoise.png)
-### Error on heading : 0.014454757
+### Mean Error on heading : 0.014454757
 
-
+## attached files
+the csv files contain a list describing each frame: 
+heading: calculated heading
+real heading: calculated from worlds
+X Y Z the target position in ego0
+dx dy dz: difference ffrom las frame
+dth: change in heading
+Rsqr: R2 score for the pixel cloud
+error: error on the calculated heading
 ## comments
 I estimated the error base on pixel cloud dispersion and then decided weather to ignore te change or correct with centroids or do nothing.
 I estimated these bars according to Rsqr distribution in the frame set using percentiles.
