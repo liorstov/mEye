@@ -213,6 +213,20 @@ def calculatYawFromWorld(frame):
     """calculate angle to Z axes"""
     return vg.signed_angle(np.array([0,0,1]),surface, np.array([0, 1, 0]), units="deg")
 
+
+def printDots(data,frames):
+    a = convertedEgo0.loc[(convertedEgo0['Frame']) <50]
+    ax = plt.axes(projection='3d')
+    ax.scatter3D(a['X'], a['Y'], a['Z'], c=a['Frame'],alpha=0.1)
+    ax.quiver(changes['X'],changes['Y'],changes['Z'],np.sin(np.radians(changes['heading'])),changes['X']*0,np.cos(np.radians(changes['heading'])), color="red",length= 3)
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_zlabel("Z")
+    ax.invert_xaxis()
+    plt.ylim(0,5)
+    ax.cla()
+
+
 def mainFunction():
     """get first frame and pixel from world to compute initial yaw"""
     yaw = calculatYawFromWorld(0)
@@ -236,30 +250,24 @@ def mainFunction():
         """calculate R square and round"""
         Rsqr = round(lineraRegressionFrame(frame,convertedEgo0),2)
 
+        """set regular pixels"""
+        framePoints = convertedEgo0
+
         """if too noisy Rsqr<0.7 use centroids. if no noisy dont correct"""
-        if ((abs(Rsqr) < skipFrameBar)):
+        if abs(Rsqr) < skipFrameBar:
             d_th = 0;
             isCentroid = False
-            framePoints = convertedEgo0
 
-            """get the center of gravity to calc movement"""
-            x, y, z = calculateCentroid(frame, framePoints)
         elif (abs(Rsqr) < noiseBar) and (abs(Rsqr) != 1):
+            """use centroid for pixels"""
             framePoints = Centroids
             isCentroid = True
-            """calculate heading using centroids or regular surface"""
-            d_th = calculateHeading(frame, framePoints, carLength)
 
-            """get the center of gravity to calc movement"""
-            x, y, z = calculateCentroid(frame, framePoints)
         else:
-            framePoints = convertedEgo0
             isCentroid = False
-            """calculate heading using centroids or regular surface"""
-            d_th = calculateHeading(frame,framePoints,carLength)
 
-            """get the center of gravity to calc movement"""
-            x, y, z = calculateCentroid(frame, framePoints)
+        """calculate heading using centroids or regular surface"""
+        d_th = calculateHeading(frame, framePoints, carLength)
 
         """add to yaw for heading"""
         yaw = yaw+d_th
@@ -268,11 +276,11 @@ def mainFunction():
         RealHeading = calculatYawFromWorld(frame)
 
         """get the center of gravity to calc movement"""
-        x, y, z = calculateCentroid(frame, framePoints)  
+        x, y, z = calculateCentroid(frame, framePoints)
         dx, dy, dz = [x, y, z] - calculateCentroid(frame - 1, framePoints)
 
         """reset every 5 frames using world"""
-        if (frame%5==0):
+        if frame % 5 == 0:
             yaw=RealHeading
             x, y, z = calculateCentroid(frame,world)
 
@@ -280,23 +288,7 @@ def mainFunction():
         if (RealHeading!=0):
             error = (yaw-RealHeading)/RealHeading;
 
-
         changes = changes.append({'Frame':frame,'dx': dx,'dy':dy,'dz': dz,'d_th': d_th,'heading': yaw, 'RealHeading': RealHeading,'error': error, 'centroid use':isCentroid ,'Rsqr': round(Rsqr,2), 'X':x,'Y':y,'Z':z},True)
 
-changes.to_csv("onlyTargetNoise.csv")
-def printDots(data,frames):
-    a = convertedEgo0.loc[(convertedEgo0['Frame']) <50]
-    ax = plt.axes(projection='3d')
-    ax.scatter3D(a['X'], a['Y'], a['Z'], c=a['Frame'],alpha=0.1)
-    ax.scatter3D(a['X'], a['Y'], a['Z'], color = 'red')
-    convertedEgo0
-    ax.quiver(changes['X'],changes['Y'],changes['Z'],np.sin(np.radians(changes['heading'])),changes['X']*0,np.cos(np.radians(changes['heading'])), color="red",length= 3)
-    ax.set_xlabel("X")
-    ax.set_ylabel("Y")
-    ax.set_zlabel("Z")
-    ax.invert_xaxis()
-    plt.ylim(0,5)
-    ax.cla()
 
 
-changes['error'].mean()
