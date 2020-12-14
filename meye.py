@@ -268,7 +268,7 @@ def mainFunction():
         RealHeading = calculatYawFromWorld(frame)
 
         """get the center of gravity to calc movement"""
-        x, y, z = calculateCentroid(frame, framePoints)
+        x, y, z = calculateCentroid(frame, framePoints)  
         dx, dy, dz = [x, y, z] - calculateCentroid(frame - 1, framePoints)
 
         """reset every 5 frames using world"""
