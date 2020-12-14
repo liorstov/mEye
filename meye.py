@@ -16,6 +16,8 @@ maxFrames = 50
 numPixels = 60
 focallength = 800
 dt = 1
+
+"""get the input"""
 world = pn.read_csv("C:\\Users\\Lior\\SandBox\\untitled\\only_target\\p.csv")
 p = pn.read_csv("C:\\Users\\Lior\\SandBox\\untitled\\only_target\\pp.csv")
 Conversion = pn.read_csv("C:\\Users\\Lior\\SandBox\\untitled\\only_target\\conversion_matrices.csv")
@@ -33,10 +35,12 @@ def estimateDistance():
     return cameraImage.item(2)
 
 def convertWorldToEgo(frame,pixel):
+    """convert real wold to ego0"""
     worldPixel = world.loc[(world['Frame']==frame) & (world['Pixel']==pixel), ['X', 'Y', 'Z', 'home']].to_numpy().reshape(4, 1)
     return (T_e_e0[frame].reshape(4, 4))[:3]*worldPixel
 
 def  convertWorldToEgoToTarget(frame,pixel):
+    """convert world to target"""
     worldPixel = world.loc[(world['Frame']==frame) & (world['Pixel']==pixel), ['X', 'Y', 'Z', 'home']].to_numpy().reshape(4, 1)
     return (T_t_e[frame].reshape(4,4)*T_e_e0[frame].reshape(4, 4))[:3]*worldPixel
 
@@ -265,36 +269,3 @@ def mainFunction():
         """get the center of gravity to calc movement"""
         dx,dy,dz = calculateCentroid(x,framePoints)- calculateCentroid(x-1,framePoints)
         changes = changes.append({'Frame':x,'dx': dx,'dy':dy,'dz': dz,'d_th': d_th,'heading': yaw, 'RealHeading': RealHeading,'error': error, 'centroid use':isCentroid ,'Rsqr': round(Rsqr,2)},True)
-changes['error'].mean()
-
-distance = estimateDistance()
-
-first = homogenize(0,2,distance)
-second = homogenize(1,2,distance)
-dx,dy,dz=second-first
-dz
-a = data.loc[(data['Frame'])<10]
-b = world.loc[(p['Frame']==1)]
-
-
-data.loc[abs(data["dx"]).idxmin()]
-big =second-first
-small =second-first
-
-data = []
-for x in np.arange(59):
-    first = homogenize(0, x, distance)
-    second = homogenize(1, x, distance)
-    data.append(second - first)
-
-a
-    print(dz)
-
-
-ax = plt.axes(projection='3d')
-ax.scatter3D(a['X'],a['Y'],a['Z'], c=a['Frame'])
-ax.invert_xaxis()
-ax.set_xlim(-6,-4.5)
-ax.quiver(*getWorldFramePixel(1,max),math.sin(heading),0,math.cos(heading),color="black")
-ax.quiver(*getWorldFramePixel(1,max),0.60,0,5)
-ax.scatter3D(b['X'][:60],b['Y'][:60],b['Z'][:60],cmap='Black')
